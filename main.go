@@ -2,8 +2,8 @@ package main
 
 import (
 	//"fmt"
-	"github.com/lizhongz/nebular/gossip"
-	//"github.com/lizhongz/nebular/storage"
+	"github.com/lizhongz/nebula/gossip"
+	//"github.com/lizhongz/nebula/storage"
 	"math/rand"
 	//"strconv"
 )
