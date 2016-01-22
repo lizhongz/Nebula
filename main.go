@@ -1,33 +1,49 @@
 package main
 
 import (
-	"fmt"
-	"github.com/lizhongz/nebular/storage"
-	"strconv"
+	//"fmt"
+	"github.com/lizhongz/nebular/gossip"
+	//"github.com/lizhongz/nebular/storage"
+	"math/rand"
+	//"strconv"
 )
 
 func main() {
-	s := storage.MakeStore()
+	rand.Seed(3)
 
-	s.Put("hello", []byte("world"))
-	s.Put("Pi", []byte(strconv.FormatFloat(3.1415826, 'f', 13, 32)))
-	s.Put("null", nil)
+	g1 := gossip.MakeGossip()
+	g1.Init("127.0.0.1:3030", nil)
 
-	key := "Pi"
-	val := s.Get(key)
-	fmt.Printf("%s: %v\n", key, string(val))
+	initAddrs := make([]string, 3)
+	initAddrs = append(initAddrs, "127.0.0.1:3030")
 
-	key = "hello"
-	val = s.Get(key)
-	fmt.Printf("%s: %v\n", key, string(val))
+	for {
 
-	key = "null"
-	val = s.Get(key)
-	fmt.Printf("%s: %v\n", key, string(val))
+	}
 
-	key = "hi"
-	val = s.Get(key)
-	fmt.Printf("%s: %v\n", key, string(val))
+	/*
+		s := storage.MakeStore()
 
-	fmt.Printf("%v\n", s)
+		s.Put("hello", []byte("world"))
+		s.Put("Pi", []byte(strconv.FormatFloat(3.1415826, 'f', 13, 32)))
+		s.Put("null", nil)
+
+		key := "Pi"
+		val := s.Get(key)
+		fmt.Printf("%s: %v\n", key, string(val))
+
+		key = "hello"
+		val = s.Get(key)
+		fmt.Printf("%s: %v\n", key, string(val))
+
+		key = "null"
+		val = s.Get(key)
+		fmt.Printf("%s: %v\n", key, string(val))
+
+		key = "hi"
+		val = s.Get(key)
+		fmt.Printf("%s: %v\n", key, string(val))
+
+		fmt.Printf("%v\n", s)
+	*/
 }
