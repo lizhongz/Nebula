@@ -10,8 +10,8 @@ import (
 )
 
 type Node struct {
-	addr      string
-	heartbeat int
+	Addr      string
+	Heartbeat int
 	timestamp time.Time
 }
 
@@ -73,8 +73,8 @@ func (g *Gossip) Init(addr string, contacts []string) error {
 func (g *Gossip) Run() {
 	for {
 		// Increase it's heartbeat by one
-		g.self.heartbeat += 1
-		log.Printf("node %s: heartbeat %v\n", g.id, g.self.heartbeat)
+		g.self.Heartbeat += 1
+		log.Printf("node %s: heartbeat %v\n", g.id, g.self.Heartbeat)
 
 		// Randomly select several nodes to contact
 		g.RLock()
@@ -82,7 +82,7 @@ func (g *Gossip) Run() {
 		if len(g.nodes) <= FanOut {
 			for id, _ := range g.nodes {
 				if id != g.id {
-					contacts[id] = g.nodes[id].addr
+					contacts[id] = g.nodes[id].Addr
 				}
 			}
 		} else {
@@ -93,7 +93,7 @@ func (g *Gossip) Run() {
 			for len(contacts) < FanOut {
 				id := ids[rand.Intn(len(ids))]
 				if _, ok := contacts[id]; !ok && id != g.id {
-					contacts[id] = g.nodes[id].addr
+					contacts[id] = g.nodes[id].Addr
 				}
 			}
 		}
@@ -139,9 +139,9 @@ func (g *Gossip) Update(nodes Nodes) {
 
 	for id, n := range nodes {
 		if gn, ok := g.nodes[id]; ok {
-			if n.heartbeat > gn.heartbeat {
+			if n.Heartbeat > gn.Heartbeat {
 				// Update node's heartbeat and timestamp
-				gn.heartbeat = n.heartbeat
+				gn.Heartbeat = n.Heartbeat
 				gn.timestamp = time.Now()
 			}
 		} else {

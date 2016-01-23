@@ -6,19 +6,20 @@ import (
 	//"github.com/lizhongz/nebula/storage"
 	"math/rand"
 	//"strconv"
+	"time"
 )
 
 func main() {
 	rand.Seed(3)
 
 	g1 := gossip.MakeGossip()
-	g1.Init("127.0.0.1:3030", nil)
+	g1.Init("172.17.0.1:3030", nil)
 
-	initAddrs := make([]string, 3)
-	initAddrs = append(initAddrs, "127.0.0.1:3030")
+	//initAddrs := make([]string, 3)
+	//initAddrs = append(initAddrs, "127.0.0.1:3030")
 
 	for {
-
+		time.Sleep(time.Millisecond * 1000)
 	}
 
 	/*
