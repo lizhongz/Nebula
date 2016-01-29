@@ -1,22 +1,25 @@
 package main
 
 import (
-	//"fmt"
 	"github.com/lizhongz/nebula/gossip"
+	"log"
 	//"github.com/lizhongz/nebula/storage"
 	"math/rand"
 	//"strconv"
+	"github.com/lizhongz/nebula/cli"
 	"time"
 )
 
 func main() {
 	rand.Seed(3)
 
-	g1 := gossip.MakeGossip()
-	g1.Init("172.17.0.1:3030", nil)
+	// Parse command line arguments
+	args := cli.Parse()
+	log.Print(args)
 
-	//initAddrs := make([]string, 3)
-	//initAddrs = append(initAddrs, "127.0.0.1:3030")
+	// Craete a gossip server
+	g1 := gossip.MakeGossip()
+	g1.Init(args.LocalAddr, args.Contacts)
 
 	for {
 		time.Sleep(time.Millisecond * 1000)

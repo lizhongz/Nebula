@@ -2,6 +2,7 @@ package gossip
 
 import (
 	"code.google.com/p/go-uuid/uuid"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/rpc"
@@ -47,10 +48,11 @@ func MakeGossip() *Gossip {
 }
 
 func (g *Gossip) Init(addr string, contacts []string) error {
+	log.Print(contacts)
 	g.self = Node{addr, 0, time.Now()}
 
 	// Start Gossip server
-	err := g.server.Start(g, addr)
+	err := g.server.Start(g)
 	if err != nil {
 		log.Fatal("gossip initilization:", err)
 		return err
@@ -81,9 +83,7 @@ func (g *Gossip) Run() {
 		contacts := make(map[string]string, FanOut)
 		if len(g.nodes) <= FanOut {
 			for id, _ := range g.nodes {
-				if id != g.id {
-					contacts[id] = g.nodes[id].Addr
-				}
+				contacts[id] = g.nodes[id].Addr
 			}
 		} else {
 			ids := make([]string, len(g.nodes))
@@ -92,7 +92,7 @@ func (g *Gossip) Run() {
 			}
 			for len(contacts) < FanOut {
 				id := ids[rand.Intn(len(ids))]
-				if _, ok := contacts[id]; !ok && id != g.id {
+				if _, ok := contacts[id]; !ok {
 					contacts[id] = g.nodes[id].Addr
 				}
 			}
@@ -107,7 +107,6 @@ func (g *Gossip) Run() {
 					log.Print("gossip pull failed", err)
 					return
 				}
-				log.Print("Pull results\n", ns)
 				g.Update(ns)
 			}(addr)
 		}
@@ -118,7 +117,7 @@ func (g *Gossip) Run() {
 
 func (g *Gossip) Pull(addr string) (Nodes, error) {
 	// Create a rpc client
-	client, err := rpc.DialHTTP("tcp", addr)
+	client, err := rpc.DialHTTP("tcp", fmt.Sprintf("%s:%d", addr, ServerPort))
 	if err != nil {
 		return nil, err
 	}

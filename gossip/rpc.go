@@ -1,7 +1,7 @@
 package gossip
 
 import (
-	"log"
+//"log"
 )
 
 type GRPC struct {
@@ -18,7 +18,6 @@ func (r *GRPC) GetNodes(arg *struct{}, ns *Nodes) error {
 		}
 	}
 	(*ns)[r.g.id] = r.g.self
-	log.Println(*ns)
 	r.g.RUnlock()
 	return nil
 }
