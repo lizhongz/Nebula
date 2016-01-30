@@ -1,8 +1,8 @@
 package gossip
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"fmt"
+	"github.com/pborman/uuid"
 	"log"
 	"math/rand"
 	"net/rpc"
