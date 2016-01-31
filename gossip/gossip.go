@@ -16,7 +16,7 @@ type Node struct {
 	timestamp time.Time
 }
 
-type Nodes map[string]Node
+type Nodes map[string]*Node
 
 const (
 	// The number of nodes to contact for each gossip.
@@ -76,7 +76,8 @@ func (g *Gossip) Run() {
 	for {
 		// Increase it's heartbeat by one
 		g.self.Heartbeat += 1
-		log.Printf("node %s: heartbeat %v\n", g.id, g.self.Heartbeat)
+		log.Printf("Gossip: node %s: heartbeat %v\n", g.id, g.self.Heartbeat)
+		log.Printf("Gossip: membership list %v\n", g.nodes)
 
 		// Randomly select several nodes to contact
 		g.RLock()
@@ -115,46 +116,62 @@ func (g *Gossip) Run() {
 	}
 }
 
-func (g *Gossip) Pull(addr string) (Nodes, error) {
+func (g *Gossip) Pull(addr string) (NodeList, error) {
 	// Create a rpc client
 	client, err := rpc.DialHTTP("tcp", fmt.Sprintf("%s:%d", addr, ServerPort))
 	if err != nil {
 		return nil, err
 	}
 
+	var ns NodeList
+	info := NodeInfo{
+		id:        g.id,
+		addr:      g.self.Addr,
+		heartbeat: g.self.Heartbeat,
+	}
+
 	// Call remote GetNodes and update local node list
-	var ns Nodes
 	// TODO: set timeout
-	err = client.Call("GRPC.GetNodes", &struct{}{}, &ns)
+	err = client.Call("GRPC.GetNodes", &info, &ns)
 	if err != nil {
 		return nil, err
 	}
 	return ns, nil
 }
 
-func (g *Gossip) Update(nodes Nodes) {
+func (g *Gossip) Update(nodes NodeList) {
 	g.Lock()
 	defer g.Unlock()
 
-	for id, n := range nodes {
-		if gn, ok := g.nodes[id]; ok {
-			if n.Heartbeat > gn.Heartbeat {
-				// Update node's heartbeat and timestamp
-				gn.Heartbeat = n.Heartbeat
-				gn.timestamp = time.Now()
-			}
-		} else {
-			// Add a new node
-			if id != g.id {
-				g.nodes[id] = n
-			}
-		}
+	// Use another node's membership list to Update this node's
+	for _, info := range nodes {
+		g.UpdateOne(info)
 	}
 
 	// Check expired nodes and remove them
 	for id, n := range g.nodes {
 		if n.timestamp.Add(TimeFail + TimeCleanup).After(time.Now()) {
+			log.Printf("Gossip: remove node %s, %s", id, n.Addr)
 			delete(g.nodes, id)
 		}
+	}
+}
+
+func (g *Gossip) UpdateOne(info NodeInfo) {
+	if n, ok := g.nodes[info.id]; ok {
+		// Update the node's info
+		if info.heartbeat > n.Heartbeat {
+			n.Addr = info.addr
+			n.Heartbeat = info.heartbeat
+			n.timestamp = time.Now()
+		}
+	} else {
+		// Add a new node
+		g.nodes[info.id] = &Node{
+			Addr:      info.addr,
+			Heartbeat: info.heartbeat,
+			timestamp: time.Now(),
+		}
+		log.Printf("Gossip: new node %s, %s", info.id, info.addr)
 	}
 }
