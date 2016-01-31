@@ -76,7 +76,7 @@ func (g *Gossip) Run() {
 	for {
 		// Increase it's heartbeat by one
 		g.self.Heartbeat += 1
-		log.Printf("Gossip: node %s: heartbeat %v\n", g.id, g.self.Heartbeat)
+		log.Printf("Gossip: node %s: heartbeat %v\n", g.id[0:8], g.self.Heartbeat)
 		log.Printf("Gossip: membership list %v\n", g.nodes)
 
 		// Randomly select several nodes to contact
@@ -150,8 +150,8 @@ func (g *Gossip) Update(nodes NodeList) {
 
 	// Check expired nodes and remove them
 	for id, n := range g.nodes {
-		if n.timestamp.Add(TimeFail + TimeCleanup).After(time.Now()) {
-			log.Printf("Gossip: remove node %s, %s", id, n.Addr)
+		if n.timestamp.Add(TimeFail + TimeCleanup).Before(time.Now()) {
+			log.Printf("Gossip: remove node %s, %s", id[0:8], n.Addr)
 			delete(g.nodes, id)
 		}
 	}
@@ -172,6 +172,6 @@ func (g *Gossip) UpdateOne(info NodeInfo) {
 			Heartbeat: info.Heartbeat,
 			timestamp: time.Now(),
 		}
-		log.Printf("Gossip: new node %s, %s", info.Id, info.Addr)
+		log.Printf("Gossip: new node %s, %s", info.Id[0:8], info.Addr)
 	}
 }
