@@ -9,9 +9,9 @@ type GRPC struct {
 }
 
 type NodeInfo struct {
-	id        string
-	addr      string
-	heartbeat int
+	Id        string
+	Addr      string
+	Heartbeat int
 }
 
 type NodeList []NodeInfo
@@ -27,9 +27,9 @@ func (r *GRPC) GetNodes(args *NodeInfo, ns *NodeList) error {
 	list := make(NodeList, len(r.g.nodes)+1)
 	for id, n := range r.g.nodes {
 		list = append(list, NodeInfo{
-			id:        id,
-			addr:      n.Addr,
-			heartbeat: n.Heartbeat,
+			Id:        id,
+			Addr:      n.Addr,
+			Heartbeat: n.Heartbeat,
 		})
 	}
 	*ns = list

@@ -125,9 +125,9 @@ func (g *Gossip) Pull(addr string) (NodeList, error) {
 
 	var ns NodeList
 	info := NodeInfo{
-		id:        g.id,
-		addr:      g.self.Addr,
-		heartbeat: g.self.Heartbeat,
+		Id:        g.id,
+		Addr:      g.self.Addr,
+		Heartbeat: g.self.Heartbeat,
 	}
 
 	// Call remote GetNodes and update local node list
@@ -158,20 +158,20 @@ func (g *Gossip) Update(nodes NodeList) {
 }
 
 func (g *Gossip) UpdateOne(info NodeInfo) {
-	if n, ok := g.nodes[info.id]; ok {
+	if n, ok := g.nodes[info.Id]; ok {
 		// Update the node's info
-		if info.heartbeat > n.Heartbeat {
-			n.Addr = info.addr
-			n.Heartbeat = info.heartbeat
+		if info.Heartbeat > n.Heartbeat {
+			n.Addr = info.Addr
+			n.Heartbeat = info.Heartbeat
 			n.timestamp = time.Now()
 		}
 	} else {
 		// Add a new node
-		g.nodes[info.id] = &Node{
-			Addr:      info.addr,
-			Heartbeat: info.heartbeat,
+		g.nodes[info.Id] = &Node{
+			Addr:      info.Addr,
+			Heartbeat: info.Heartbeat,
 			timestamp: time.Now(),
 		}
-		log.Printf("Gossip: new node %s, %s", info.id, info.addr)
+		log.Printf("Gossip: new node %s, %s", info.Id, info.Addr)
 	}
 }
