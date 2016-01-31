@@ -112,6 +112,16 @@ func (g *Gossip) Run() {
 			}(addr)
 		}
 
+		// Check expired nodes and remove them
+		g.RLock()
+		for id, n := range g.nodes {
+			if n.timestamp.Add(TimeFail + TimeCleanup).Before(time.Now()) {
+				log.Printf("Gossip: remove node %s, %s", id[0:8], n.Addr)
+				delete(g.nodes, id)
+			}
+		}
+		g.RUnlock()
+
 		time.Sleep(GossipInterval)
 	}
 }
@@ -147,14 +157,6 @@ func (g *Gossip) Update(nodes NodeList) {
 	for _, info := range nodes {
 		g.UpdateOne(info)
 	}
-
-	// Check expired nodes and remove them
-	for id, n := range g.nodes {
-		if n.timestamp.Add(TimeFail + TimeCleanup).Before(time.Now()) {
-			log.Printf("Gossip: remove node %s, %s", id[0:8], n.Addr)
-			delete(g.nodes, id)
-		}
-	}
 }
 
 func (g *Gossip) UpdateOne(info NodeInfo) {
@@ -167,11 +169,13 @@ func (g *Gossip) UpdateOne(info NodeInfo) {
 		}
 	} else {
 		// Add a new node
-		g.nodes[info.Id] = &Node{
-			Addr:      info.Addr,
-			Heartbeat: info.Heartbeat,
-			timestamp: time.Now(),
+		if info.Id != g.id {
+			g.nodes[info.Id] = &Node{
+				Addr:      info.Addr,
+				Heartbeat: info.Heartbeat,
+				timestamp: time.Now(),
+			}
+			log.Printf("Gossip: new node %s, %s", info.Id[0:8], info.Addr)
 		}
-		log.Printf("Gossip: new node %s, %s", info.Id[0:8], info.Addr)
 	}
 }
