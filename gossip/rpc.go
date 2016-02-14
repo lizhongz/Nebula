@@ -1,7 +1,8 @@
 package gossip
 
 import (
-	"log"
+	//"log"
+	"time"
 )
 
 type GRPC struct {
@@ -24,14 +25,15 @@ func (r *GRPC) GetNodes(args *NodeInfo, ns *NodeList) error {
 
 	// Copy this node's membership list
 	r.g.RLock()
-	//list := make(NodeList, len(r.g.nodes)+1)
 	list := make([]NodeInfo, 0, len(r.g.nodes)+1)
 	for id, n := range r.g.nodes {
-		list = append(list, NodeInfo{
-			Id:        id,
-			Addr:      n.Addr,
-			Heartbeat: n.Heartbeat,
-		})
+		if n.timestamp.Add(TimeFail).After(time.Now()) {
+			list = append(list, NodeInfo{
+				Id:        id,
+				Addr:      n.Addr,
+				Heartbeat: n.Heartbeat,
+			})
+		}
 	}
 	*ns = list
 	r.g.RUnlock()

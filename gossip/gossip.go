@@ -18,6 +18,14 @@ type Node struct {
 
 type Nodes map[string]*Node
 
+func (ns Nodes) String() string {
+	var s string
+	for id, n := range ns {
+		s += fmt.Sprintf("%s:%d ", id[0:8], n.Heartbeat)
+	}
+	return s
+}
+
 const (
 	// The number of nodes to contact for each gossip.
 	FanOut = 3
@@ -54,7 +62,7 @@ func (g *Gossip) Init(addr string, contacts []string) error {
 	// Start Gossip server
 	err := g.server.Start(g)
 	if err != nil {
-		log.Fatal("gossip initilization:", err)
+		log.Fatal("gossip initilization: ", err)
 		return err
 	}
 
@@ -62,7 +70,7 @@ func (g *Gossip) Init(addr string, contacts []string) error {
 	for _, addr := range contacts {
 		nodes, err := g.Pull(addr)
 		if err != nil {
-			log.Print("gossip pull failed", err)
+			log.Print("gossip pull failed: ", err)
 		}
 		g.Update(nodes)
 	}
@@ -81,13 +89,13 @@ func (g *Gossip) Run() {
 
 		// Randomly select several nodes to contact
 		g.RLock()
-		contacts := make(map[string]string, FanOut)
+		contacts := make(map[string]string)
 		if len(g.nodes) <= FanOut {
 			for id, _ := range g.nodes {
 				contacts[id] = g.nodes[id].Addr
 			}
 		} else {
-			ids := make([]string, len(g.nodes))
+			ids := make([]string, 0, len(g.nodes))
 			for id, _ := range g.nodes {
 				ids = append(ids, id)
 			}
