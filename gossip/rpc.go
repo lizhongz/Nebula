@@ -1,15 +1,42 @@
 package gossip
 
+import (
+	//"log"
+	"time"
+)
+
 type GRPC struct {
 	g *Gossip
 }
 
-func (r *GRPC) GetNodes(arg *struct{}, ns *Nodes) error {
+type NodeInfo struct {
+	Id        string
+	Addr      string
+	Heartbeat int
+}
+
+type NodeList []NodeInfo
+
+func (r *GRPC) GetNodes(args *NodeInfo, ns *NodeList) error {
+	// Update the caller's info
+	r.g.Lock()
+	r.g.UpdateOne(*args)
+	r.g.Unlock()
+
+	// Copy this node's membership list
 	r.g.RLock()
+	list := make([]NodeInfo, 0, len(r.g.nodes)+1)
 	for id, n := range r.g.nodes {
-		(*ns)[id] = n
+		if n.timestamp.Add(TimeFail).After(time.Now()) {
+			list = append(list, NodeInfo{
+				Id:        id,
+				Addr:      n.Addr,
+				Heartbeat: n.Heartbeat,
+			})
+		}
 	}
-	(*ns)[r.g.id] = r.g.self
+	*ns = list
 	r.g.RUnlock()
+
 	return nil
 }
