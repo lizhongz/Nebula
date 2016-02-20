@@ -12,13 +12,11 @@ RUN sudo apt-get update && sudo apt-get install -y \
 
 RUN mkdir /root/go
 ENV GOPATH=/root/go
+ENV PATH=$PATH:$GOPATH/bin
 
 # Clone nebula repo and install it
 
-RUN go get -d github.com/lizhongz/nebula
+WORKDIR $GOPATH/src/github.com/lizhongz/nebula
+COPY . $GOPATH/src/github.com/lizhongz/nebula
 
-ENV NE_PATH=$GOPATH/src/github.com/lizhongz/nebula
-
-RUN cd $NE_PATH && \
-    git fetch && \
-    git checkout dev
+RUN go get
